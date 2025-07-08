@@ -1,8 +1,3 @@
-<!-- 
-LG CNS 회수확인서 프로그램 v1.0
-최종 수정일: 2025-07-08
-개발자: [이스트림 기술지원팀 박천호 과장]
--->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -10,7 +5,7 @@ LG CNS 회수확인서 프로그램 v1.0
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LG CNS 회수확인서 프로그램</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
+        <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         /* 🔥 폰트 문제 해결 - 이 부분을 추가하세요 */
@@ -175,7 +170,7 @@ h1::before {
 }
 
 
-/* 🔥 회수확인서 영역 - 완전히 새로운 버전 */
+/* 🔥 /* 🔥 회수확인서 영역 - 완전히 새로운 버전 */
 .receipt-wrapper {
     display: none;
     padding-top: 290px; /* 🔥 고정 헤더 공간 확보 */
@@ -778,6 +773,7 @@ h1::before {
         gap: 10px !important;
     }
     
+    .signature-title {
 .signature-title {
     font-size: 20px !important;
     min-width: 55px !important;                /* 🔥 70px → 55px로 축소 */
@@ -832,6 +828,7 @@ h1::before {
     }
 
 /* 🖨️ 인쇄용 스타일 */
+@media print {
     /* 🔥 인쇄 시 타이틀 영역 숨기기 */
     .receipt-title-section {
         display: none !important;
@@ -884,6 +881,7 @@ h1::before {
     /* 🔥 절취선 간격 최적화 */
     .cut-line {
         margin: 8mm auto !important;
+    }
     }
 }
         /* 🆕 로고 스타일 */
@@ -946,6 +944,7 @@ h1::before {
     <div class="fixed-header">
     <div class="container">
         <h1>🏢 LG CNS 회수확인서 프로그램</h1>
+        
         <div class="upload-section">
             <div class="file-input-wrapper">
                 <input type="file" id="excelFile" accept=".xlsx,.xls" />
@@ -981,10 +980,9 @@ h1::before {
     </div>
 </body>
     <script>
-    // 🔥 이 부분을 JavaScript 시작 부분에 추가하세요
-let excelData = [];
-let currentDateTime = null;
-
+        let excelData = [];
+        let currentDateTime = null;
+        
         // 토스트 알림 함수
         function showToast(message, isError = false) {
             const existingToast = document.querySelector('.toast');
@@ -1011,9 +1009,9 @@ let currentDateTime = null;
         
         // 페이지 로드 시 시간 동기화
         document.addEventListener('DOMContentLoaded', function() {
-    syncDateTime();
-    setInterval(updateCurrentDate, 24 * 60 * 60 * 1000);
-});
+            syncDateTime();
+            setInterval(updateCurrentDate, 24 * 60 * 60 * 1000);
+        });
         
         // 온라인 시간 서버와 동기화
         async function syncDateTime() {
@@ -1174,13 +1172,13 @@ let currentDateTime = null;
                 console.log(`통합된 항목: 회수코드 ${item.recoveryCode} - 자산번호 ${item.assetNumbers.length}개, 제품 ${item.products.length}개`);
                 
                 return {
-    assetNumbers: item.assetNumbers,
-    recoveryCode: item.recoveryCode,
-    products: item.products,
-    returnPerson: item.returnPerson,
-    contact: item.contact,
-    originalRows: item.originalRows
-};
+                    assetNumbers: item.assetNumbers,
+                    recoveryCode: item.recoveryCode,
+                    products: item.products,
+                    returnPerson: item.returnPerson,
+                    contact: item.contact,
+                    originalRows: item.originalRows
+                };
             });
         }
         
@@ -1311,11 +1309,8 @@ let currentDateTime = null;
         }
         
         function createReceiptHTML(type, date, itemData, index) {
-    const assetNumbersText = itemData.assetNumbers.join(', ');
-    const productListText = createProductListText(itemData.products);
-    
-const returnPerson = itemData.returnPerson;
-const contact = itemData.contact;
+            const assetNumbersText = itemData.assetNumbers.join(', ');
+            const productListText = createProductListText(itemData.products);
             
 // 🎯 모든 타입에서 가로 1줄 레이아웃 사용
 const signatureSection = type === '반납자용' ? 
@@ -1344,7 +1339,7 @@ const signatureSection = type === '반납자용' ?
                         <p><strong>자산번호:</strong> <span class="value">${assetNumbersText}</span></p>
                         <p><strong>회수코드:</strong> <span class="value">${itemData.recoveryCode}</span></p>
                         <p><strong>회수제품목록:</strong> <span class="value">${productListText}</span></p>
-                        <p><strong>반납자 정보:</strong> <span class="value">${returnPerson} ${contact}</span></p>
+                        <p><strong>반납자 정보:</strong> <span class="value">${itemData.returnPerson} ${itemData.contact}</span></p>
                         <p><strong>인수일자:</strong> <span class="value">${formatDate(date)}</span></p>
                     </div>
                     ${signatureSection}
