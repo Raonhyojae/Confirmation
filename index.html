@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LG CNS 회수확인서 프로그램</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+        <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* 🔥 폰트 문제 해결 - 이 부분을 추가하세요 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+        
+        body { 
+    font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; 
+    margin: 0 !important;
+    padding: 0 !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+}
+        
+        .container { 
+    background: transparent !important;
+    box-shadow: none !important;
+    max-width: 600px; 
+    margin: 0 auto; 
+    padding: 20px !important;
+    border-radius: 15px; 
+}
+
+        
+        h1 { 
+    text-align: center;
+    margin-bottom: 30px; 
+    font-size: 32px; 
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 
+        2px 2px 4px rgba(0,0,0,0.5),
+        4px 4px 8px rgba(0,0,0,0.3),
+        6px 6px 12px rgba(0,0,0,0.2),
+        0 0 10px rgba(255,255,255,0.3),
+        0 0 20px rgba(255,255,255,0.2);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 25px;
+    border-radius: 15px;
+    position: relative;
+    box-shadow: 
+        0 8px 32px rgba(0,0,0,0.3),
+        inset 0 2px 0 rgba(255,255,255,0.2),
+        inset 0 -2px 0 rgba(0,0,0,0.2);
+}
+
+h1::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    border-radius: 15px;
+    animation: crystal-shine 3s ease-in-out infinite;
+}
+
+@keyframes crystal-shine {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+}
+
+        .upload-section { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #90caf9 0%, #bbdefb 100%);
+            color: #0d47a1;
+            border: 2px solid #4caf50;
+        }
+
+/* 🎯 고정 헤더 - 최종 해결책 */
+.fixed-header {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    z-index: 10000 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    margin: 0 !important;
+    max-width: none !important;
+    transform: none !important;
+    transition: all 0.3s ease;
+}
+
+/* 🔥 회수증 생성 시 헤더를 상단으로 축소 */
+.fixed-header.compact {
+    height: auto !important;
+    min-height: 8px !important;
+    padding: 8px !important;
+    position: fixed !important;
+    top: 0 !important;
+    z-index: 10000 !important;
+}
+
+/* 🔥 컴팩트 모드에서 컨테이너 스타일 조정 */
+.fixed-header.compact .container {
+    max-width: 100% !important;
+    padding: 10px !important;
+    margin: 0 !important;
+}
+
+/* 🔥 컴팩트 모드에서 제목 크기 축소 */
+.fixed-header.compact h1 {
+    font-size: 40px !important;
+    margin-bottom: 25px !important;
+    padding: 15px !important;
+}
+
+/* 🔥 컴팩트 모드에서 업로드 섹션 숨기기 */
+.fixed-header.compact .upload-section {
+    display: none !important;
+}
+
+/* 🔥 컴팩트 모드에서 로고 숨기기 */
+.fixed-header.compact .simple-logo {
+    display: none !important;
+}
+
+/* 🔥 컴팩트 모드에서 버튼들 작게 */
+.fixed-header.compact .controls {
+    gap: 8px !important;
+    margin-bottom: 20px !important;
+}
+
+.fixed-header.compact .btn {
+    padding: 8px 15px !important;
+    font-size: 15px !important;
+}
+
+.fixed-header.compact .date-display {
+    padding: 6px 12px !important;
+    font-size: 18px !important;
+}
+
+
+/* 🔥 헤더 내부 컨텐츠 컨테이너 */
+.fixed-header > * {
+    max-width: 800px;
+    width: 100%;
+}
+
+/* 🔥 추가: 헤더 주변에 배경 확장 */
+.fixed-header::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: -1;
+}
+
+
+/* 🔥 /* 🔥 회수확인서 영역 - 완전히 새로운 버전 */
+.receipt-wrapper {
+    display: none;
+    padding-top: 290px; /* 🔥 고정 헤더 공간 확보 */
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 400px;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    position: relative;
+    z-index: 5000; /* 🔥 헤더보다 낮은 z-index */
+}
+
+/* 🔥 회수확인서 생성 시 보이게 하는 클래스 */
+.receipt-wrapper.show {
+    display: block !important;
+}
+
+/* 🔥 스크롤 시 내용이 헤더 뒤로 완전히 숨겨짐 */
+.receipt-container {
+    background: transparent;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 1000px;
+}
+
+/* 🖨️ 인쇄 시 고정 헤더 숨기기 추가 */
+@media print {
+    .fixed-header {
+        display: none !important;
+    }
+    
+    .receipt-wrapper {
+        padding-top: 0 !important;
+    }
+    
+    .receipt-wrapper,
+    .receipt-container,
+    #receiptContainer {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+}
+        
+        .file-input-wrapper { 
+            position: relative; 
+            display: inline-block; 
+            margin-bottom: 15px;
+        }
+        
+        .file-input-wrapper input[type=file] { 
+            position: absolute; 
+            opacity: 0; 
+            width: 100%; 
+            height: 100%; 
+            cursor: pointer; 
+        }
+        
+        .file-input-label { 
+            display: inline-block; 
+            padding: 12px 25px; 
+            background: rgba(255,255,255,0.2);
+            color: white; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 200;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .file-input-label:hover { 
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .controls { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 15px; 
+            margin-bottom: 25px; 
+            flex-wrap: wrap;
+        }
+        
+        .date-display {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .date-display .calendar-icon {
+            font-size: 18px;
+        }
+        
+        /* 🎨 화려한 버튼 호버 효과 스타일 */
+.btn { 
+    position: relative;
+    overflow: hidden;
+    padding: 12px 25px; 
+    border: none; 
+    border-radius: 25px; 
+    cursor: pointer; 
+    font-size: 14px; 
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transform: translateY(0);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+    animation: rainbow-pulse 1.5s infinite;
+}
+
+.btn:active {
+    transform: translateY(-2px) scale(1.04);
+    transition: all 0.1s ease;
+}
+
+/* 🌈 무지개 펄스 애니메이션 */
+@keyframes rainbow-pulse {
+    0% { box-shadow: 0 12px 30px rgba(255, 107, 107, 0.5); }
+    16% { box-shadow: 0 12px 30px rgba(255, 165, 0, 0.5); }
+    33% { box-shadow: 0 12px 30px rgba(255, 255, 0, 0.5); }
+    50% { box-shadow: 0 12px 30px rgba(0, 255, 0, 0.5); }
+    66% { box-shadow: 0 12px 30px rgba(0, 191, 255, 0.5); }
+    83% { box-shadow: 0 12px 30px rgba(138, 43, 226, 0.5); }
+    100% { box-shadow: 0 12px 30px rgba(255, 107, 107, 0.5); }
+}
+
+.btn-primary { 
+    background: linear-gradient(135deg, #667eea, #764ba2); 
+    color: white; 
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #54a0ff 100%);
+    animation: rainbow-pulse 1.5s infinite, btn-primary-glow 2s infinite;
+}
+
+@keyframes btn-primary-glow {
+    0%, 100% { 
+        background: linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #54a0ff 100%);
+    }
+    25% { 
+        background: linear-gradient(135deg, #feca57 0%, #48dbfb 25%, #ff9ff3 50%, #54a0ff 75%, #ff6b6b 100%);
+    }
+    50% { 
+        background: linear-gradient(135deg, #48dbfb 0%, #ff9ff3 25%, #54a0ff 50%, #ff6b6b 75%, #feca57 100%);
+    }
+    75% { 
+        background: linear-gradient(135deg, #ff9ff3 0%, #54a0ff 25%, #ff6b6b 50%, #feca57 75%, #48dbfb 100%);
+    }
+}
+
+.btn-secondary { 
+    background: linear-gradient(135deg, #a8edea, #fed6e3); 
+    color: #333; 
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 25%, #fecfef 50%, #fad0c4 75%, #a8edea 100%);
+    color: white;
+    animation: rainbow-pulse 1.5s infinite, btn-secondary-glow 2s infinite;
+}
+
+@keyframes btn-secondary-glow {
+    0%, 100% { 
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 25%, #fad0c4 50%, #a8edea 75%, #fed6e3 100%);
+    }
+    50% { 
+        background: linear-gradient(135deg, #fad0c4 0%, #a8edea 25%, #fed6e3 50%, #ff9a9e 75%, #fecfef 100%);
+    }
+}
+
+/* 🌟 반짝이는 효과 */
+.btn:hover::after {
+    content: '✨';
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    animation: sparkle 1s infinite;
+    font-size: 16px;
+}
+
+@keyframes sparkle {
+    0%, 100% { 
+        opacity: 0; 
+        transform: translateY(-50%) scale(0.5) rotate(0deg); 
+    }
+    50% { 
+        opacity: 1; 
+        transform: translateY(-50%) scale(1.3) rotate(180deg); 
+    }
+}
+
+/* 🎯 생성 버튼 특별 효과 */
+.btn-primary:hover::after {
+    content: '🚀';
+}
+
+/* 🖨️ 인쇄 버튼 특별 효과 */
+.btn-secondary:hover::after {
+    content: '🖨️';
+}
+
+        
+.receipt-page { 
+    width: 180mm; 
+    margin: 20px auto; 
+    padding: 15mm; 
+    background: white; 
+    box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+    border-radius: 15px;
+    border: 2px solid rgba(255,255,255,0.2);
+    /* 🎯 완벽한 중앙 정렬을 위한 추가 스타일 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* 🌟 회수증 페이지에 반짝이는 효과 추가 */
+.receipt-page::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+    border-radius: 15px;
+    z-index: -1;
+    animation: border-glow 3s ease-in-out infinite;
+}
+
+@keyframes border-glow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+}
+
+.receipt { 
+    border: 2px solid #333; 
+    padding: 20px; 
+    margin-bottom: 5mm;
+    border-radius: 8px;
+    background: #fafafa;
+    /* 🎯 균형잡힌 레이아웃 */
+    width: 100%;
+    max-width: 150mm;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.receipt h2 { 
+    text-align: center; 
+    margin-bottom: 25px; 
+    font-size: 24px; 
+    color: #333;
+    border-bottom: 3px solid #667eea; 
+    padding-bottom: 12px; 
+    font-weight: 700;
+}
+
+.receipt-info { 
+    margin-bottom: 30px; 
+}
+
+.receipt-info p { 
+    margin-bottom: 14px; 
+    font-size: 16px; 
+    display: flex;
+    align-items: flex-start;
+    /* 🎯 완벽한 정렬을 위한 추가 */
+    justify-content: flex-start;
+    gap: 11px;
+}
+
+.receipt-info strong { 
+    display: inline-block;   /* 🔥 flex → inline-block으로 되돌림 */
+    width: 140px; 
+    color: #000000;
+    font-weight: 900;
+    background: #e8f4f8;
+    padding: 15px 8px;       /* 🔥 패딩 조정 */
+    border-radius: 8px;
+    flex-shrink: 0;
+    text-align: center;
+    border: 1px solid #d1ecf1;
+    font-size: 16px;         /* 🔥 18px → 15px로 축소 */
+    line-height: 1.3;
+    word-break: keep-all;
+    white-space: normal;
+    vertical-align: top;     /* 🔥 추가: 상단 정렬 */
+    box-sizing: border-box;  /* 🔥 추가: 박스 사이징 */
+    font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; /* 🔥 폰트 명시 */
+}
+
+.receipt-info .value { 
+    flex: 1; 
+    padding: 12px 28px; 
+    background: white; 
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    min-height: 15px;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #000000;
+}
+
+.signature-section { 
+    margin-top: 30px; 
+    border-top: 3px solid #667eea; 
+    padding-top: 25px; 
+}
+
+.signature-row {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.signature-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1px;
+    flex: 1;
+    justify-content: left;
+    max-width: 50%;
+    box-sizing: border-box;
+}
+
+.signature-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    min-width: 90px;
+}
+
+.cut-line { 
+    border-top: 2px dashed #667eea; 
+    margin: 15mm auto; 
+    position: relative; 
+    text-align: center;
+    /* 🎯 완벽한 중앙 정렬 */
+    width: 100%;
+    max-width: 160mm;
+}
+
+.cut-line::before { 
+    content: "✂️ 절취선"; 
+    position: absolute; 
+    left: 50%; 
+    top: -12px; 
+    transform: translateX(-50%); 
+    background: white; 
+    padding: 0 20px; 
+    color: #667eea;
+    font-weight: 600;
+    font-size: 14px;
+}
+        
+        .upload-info { 
+            margin-top: 15px; 
+            color: rgba(255,255,255,0.9); 
+            font-size: 13px;
+        }
+        
+        .sync-status {
+            margin-top: 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+        }
+
+        /* 알림 토스트 스타일 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 15000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+        
+/* 🖨️ A4 한 페이지에 두 영수증 모두 인쇄하는 CSS */
+@media print {
+    @page {
+        size: A4;
+        margin: 8mm;
+    }
+.signature-group {
+    gap: 18px !important;                      /* 🔥 제목-박스 간격 넓히기 */
+    justify-content: flex-start !important;
+}
+
+.signature-title {
+    text-align: left !important;               /* 🔥 제목 왼쪽 정렬 */
+    min-width: 55px !important;                /* 🔥 제목 폭 조정 */
+}
+    
+    /* 🔥 인쇄 시 배경 제거 */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        background: white !important;
+        background-color: white !important;
+        background-image: none !important;
+    }
+    
+    /* 🔥 불필요한 요소들 숨기기 */
+    .fixed-header,
+    .upload-section,
+    .controls,
+    .simple-logo,
+    h1,
+    button,
+    input,
+    .btn,
+    .file-input-wrapper,
+    .date-display,
+    .upload-info,
+    .sync-status,
+    .toast,
+    .receipt-title-section,
+    .receipt-buttons-section {
+        display: none !important;
+    }
+    
+    /* 📄 기본 페이지 설정 */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: 'Malgun Gothic', Arial, sans-serif !important;
+        font-size: 11px !important;
+        background: white !important;
+        background-color: white !important;
+        background-image: none !important;
+        color: black !important;
+    }
+    
+    /* 🔥 모든 요소의 배경 강제 제거 */
+    body *,
+.receipt-wrapper,
+.receipt-container,
+#receiptContainer,
+.receipt-page,
+.receipt,
+.cut-line,
+.cut-line::before,
+.cut-line::after {
+    background: white !important;
+    background-color: white !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+    
+    /* 📦 컨테이너 */
+    .receipt-wrapper {
+        padding-top: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    
+    .container,
+    #receiptContainer {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    
+    /* 📋 영수증 페이지 - A4에 맞춤 */
+    .receipt-page {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-after: auto !important;
+        page-break-inside: avoid !important;
+        display: block !important;
+        height: auto !important;
+    }
+    
+    /* 🎫 개별 영수증 - A4 크기에 맞춤 */
+    .receipt {
+        display: block !important;
+        width: 100% !important;
+        max-width: 160mm !important;
+        margin: 2mm auto !important;
+        padding: 5mm !important;
+        font-size: 12px !important;
+        page-break-inside: avoid !important;
+        border: 1px solid #333 !important;
+        border-radius: 4px !important;
+        background: white !important;
+    }
+    
+    /* 🔥 회수증 제목 크기 */
+    .receipt h2 {
+        font-size: 18px !important;
+        margin-bottom: 12px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 2px solid #667eea !important;
+    }
+    
+    /* 🔥 회수증 정보 영역 */
+    .receipt-info {
+        margin-bottom: 30px !important;
+    }
+    
+    .receipt-info p {
+        margin-bottom: 15px !important;
+        font-size: 16px !important;
+        gap: 12px !important;
+    }
+    
+    .receipt-info strong {
+        width: 140px !important;
+        padding: 12px 14px !important;
+        font-size: 14px !important;
+        line-height: 1.3 !important;
+    }
+    
+    .receipt-info .value {
+        padding: 12px 10px !important;
+        font-size: 14px !important;
+        min-height: 12px !important;
+        line-height: 1.4 !important;
+       font-weight: 700 !important;
+    }
+    
+    /* 🔥 서명 영역 */
+    .signature-section {
+        margin-top: 12px !important;
+        padding-top: 12px !important;
+        border-top: 2px solid #667eea !important;
+    }
+    
+    .signature-row {
+        margin-bottom: 8px !important;
+        gap: 10px !important;
+    }
+    
+    .signature-title {
+.signature-title {
+    font-size: 20px !important;
+    min-width: 55px !important;                /* 🔥 70px → 55px로 축소 */
+    text-align: left !important;
+}
+    
+    .signature-box {
+        height: 75px !important;
+        width: 180px !important;
+        border: 2px solid #dee2e6 !important;
+        border-radius: 8px !important;
+    }
+    
+/* 🔥 절취선 - 인쇄 시 배경 완전 제거 */
+.cut-line {
+    margin: 25mm auto !important;
+    border-top: 1px dashed #667eea !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
+.cut-line::before {
+    font-size: 11px !important;
+    top: -10px !important;
+    padding: 0 12px !important;
+    background: white !important;
+    background-color: white !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+    
+    /* 🔥 회수증 페이지 - 한 장에 맞춤 */
+    .receipt-page {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 2mm !important;
+        page-break-after: auto !important;
+        page-break-inside: avoid !important;
+        display: block !important;
+        height: auto !important;
+        max-height: 280mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: white !important;
+    }
+    
+    .receipt-page::before {
+        display: none !important;
+    }
+
+/* 🖨️ 인쇄용 스타일 */
+@media print {
+    /* 🔥 인쇄 시 타이틀 영역 숨기기 */
+    .receipt-title-section {
+        display: none !important;
+    }
+    
+    /* 🔥 인쇄 시 버튼 영역 숨기기 */
+    .receipt-buttons-section {
+        display: none !important;
+    }
+    
+    /* 🔥 인쇄 시 회수증 페이지 설정 */
+    .receipt-page::before {
+        display: none !important;
+    }
+    
+    /* 🔥 A4 한 장에 두 영수증 완벽 맞춤 */
+    .receipt-page {
+        height: auto !important;
+        min-height: auto !important;
+        max-height: 270mm !important;
+        padding: 3mm !important;
+    }
+    
+    /* 🔥 첫 번째 영수증 (회수자용) */
+    .receipt:first-child {
+        margin-top: 0 !important;
+        height: auto !important;
+        max-height: 265mm !important;
+    }
+    
+    /* 🔥 두 번째 영수증 (반납자용) */
+    .receipt:last-child {
+        margin-bottom: 0 !important;
+        height: auto !important;
+        max-height: 265mm !important;
+    }
+    
+    /* 🔥 페이지 나누기 방지 */
+    .receipt-page,
+    .receipt {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    
+    /* 🔥 전체 컨테이너 높이 조정 */
+    .receipt-container {
+        height: auto !important;
+    }
+    
+    /* 🔥 절취선 간격 최적화 */
+    .cut-line {
+        margin: 8mm auto !important;
+    }
+    }
+}
+        /* 🆕 로고 스타일 */
+.company-logo {
+    display: flex;                    /* 🎯 Flexbox 사용 */
+    justify-content: center;          /* 🎯 수평 가운데 정렬 */
+    align-items: center;              /* 🎯 수직 가운데 정렬 */
+    width: 100%;                      /* 🎯 전체 너비 사용 */
+    text-align: center;
+    margin: 15px auto;                /* 🎯 상하 여백 + 자동 가운데 */
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+        .logo-image {
+    display: block;                   /* 🎯 블록 요소로 설정 */
+    margin: 0 auto;                   /* 🎯 자동 가운데 정렬 */
+    max-width: 300px;                 /* 🎯 현재 설정된 크기 유지 */
+    width: 300px;                     /* 🎯 고정 너비 */
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    transition: all 0.3s ease;
+}
+
+        .logo-image:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+        }
+
+        /* 헤더가 축소될 때 로고 숨기기 */
+        .fixed-header.compact .company-logo {
+            display: none !important;
+        }
+
+        /* 인쇄 시 로고 표시 */
+        @media print {
+            .company-logo {
+                background: none !important;
+                border: none !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+                margin-top: 10px;
+                padding: 10px 0;
+            }
+            
+            .logo-image {
+                filter: none !important;
+                max-height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 🎯 고정 헤더 영역 -->
+    <div class="fixed-header">
+    <div class="container">
+        <h1>🏢 LG CNS 회수확인서 프로그램</h1>
+        
+        <div class="upload-section">
+            <div class="file-input-wrapper">
+                <input type="file" id="excelFile" accept=".xlsx,.xls" />
+                <label for="excelFile" class="file-input-label">
+                    📊 엑셀 파일 업로드
+                </label>
+            </div>
+            <div class="upload-info">
+                엑셀 파일을 업로드하면 자동으로 데이터가 입력됩니다.
+            </div>
+            <div class="sync-status" id="syncStatus">시간 동기화 중...</div>
+        </div>
+        
+        <div class="controls">
+            <div class="date-display" id="dateDisplay">
+                <span class="calendar-icon">📅</span>
+                <span id="currentDate">날짜 로딩 중...</span>
+            </div>
+            <button class="btn btn-primary" onclick="generateReceipt()">📋 회수증 생성</button>
+            <button class="btn btn-secondary" onclick="printReceipt()">🖨️ 인쇄하기</button>
+            <button class="btn btn-secondary" onclick="toggleReceipt()">👁️ 회수증 보기/숨기기</button>
+        </div>
+<!-- 🆕 로고 추가 -->
+<div class="company-logo" style="display: flex; justify-content: center; align-items: center; text-align: center;">
+    <img src="https://d41chssnpqdne.cloudfront.net/user_upload_by_module/chat_bot/files/147574694/LDTIWHY8CNYzhbBr.png?Expires=1753109459&Signature=p4NaBICCU88v1S4UKktLwynt2wAxowfwCjPDTmFcJhk8RoWkj6HNjitu398PF8EhqXBhZ1p34wgD-vO6tqTV7GiRG0Cgd~D4xaoudCRm16T~L6aV7k-hT8HdHp~bsoNQR7r8czDZa2fSRQL1CMFFz09j~xiDsTk9BUcxQGkEiQYp41dCaaQTfyGS3PxpO3ejUcocWdtGfTrQcbm0Uxhv-5S-Yf25G64itr4aWdgBJxjElx-MjtWeuRvx0~86mFj3j3U9xaeMkR2iGZmmi89Xbl5zSf~bvSx7-sne7x5QNXIAZ4LBTR2BwwzDG61RaNz7Jy8KolrSpWFaGCanaR6Z1w__&Key-Pair-Id=K3USGZIKWMDCSX" alt="eSTREAM 로고" class="logo-image" style="width: 200px; display: block; margin: 0 auto;">
+</div>
+        </div>
+</div>
+    
+    <!-- 🎯 회수확인서 영역 -->
+    <div class="receipt-wrapper">
+        <div class="receipt-container" id="receiptContainer"></div>
+    </div>
+</body>
+    <script>
+        let excelData = [];
+        let currentDateTime = null;
+        
+        // 토스트 알림 함수
+        function showToast(message, isError = false) {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${isError ? 'error' : ''}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // 페이지 로드 시 시간 동기화
+        document.addEventListener('DOMContentLoaded', function() {
+            syncDateTime();
+            setInterval(updateCurrentDate, 24 * 60 * 60 * 1000);
+        });
+        
+        // 온라인 시간 서버와 동기화
+        async function syncDateTime() {
+            const syncStatus = document.getElementById('syncStatus');
+            syncStatus.textContent = '온라인 시간 서버와 동기화 중...';
+            
+            try {
+                const timeAPIs = [
+                    {
+                        url: 'https://worldtimeapi.org/api/timezone/Asia/Seoul',
+                        parser: (data) => new Date(data.datetime)
+                    }
+                ];
+                
+                let syncSuccess = false;
+                
+                for (const api of timeAPIs) {
+                    try {
+                        const response = await fetch(api.url);
+                        if (response.ok) {
+                            const data = await response.json();
+                            currentDateTime = api.parser(data);
+                            if (currentDateTime && !isNaN(currentDateTime.getTime())) {
+                                syncSuccess = true;
+                                syncStatus.textContent = '✅ 온라인 시간 서버와 동기화 완료';
+                                break;
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`API ${api.url} 실패:`, error);
+                        continue;
+                    }
+                }
+                
+                if (!syncSuccess) {
+                    currentDateTime = new Date();
+                    syncStatus.textContent = '⚠️ 온라인 동기화 실패, 로컬 시간 사용';
+                }
+                
+            } catch (error) {
+                currentDateTime = new Date();
+                syncStatus.textContent = '⚠️ 시간 동기화 오류, 로컬 시간 사용';
+            }
+            
+            updateCurrentDate();
+            
+            setTimeout(() => {
+                syncStatus.style.display = 'none';
+            }, 3000);
+        }
+        
+        function updateCurrentDate() {
+            if (!currentDateTime) {
+                currentDateTime = new Date();
+            }
+            
+            const year = currentDateTime.getFullYear();
+            const month = String(currentDateTime.getMonth() + 1).padStart(2, '0');
+            const day = String(currentDateTime.getDate()).padStart(2, '0');
+            
+            const dateString = `${year}년 ${month}월 ${day}일`;
+            document.getElementById('currentDate').textContent = dateString;
+        }
+        
+        function getCurrentDateString() {
+            if (!currentDateTime) {
+                currentDateTime = new Date();
+            }
+            
+            const year = currentDateTime.getFullYear();
+            const month = String(currentDateTime.getMonth() + 1).padStart(2, '0');
+            const day = String(currentDateTime.getDate()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}`;
+        }
+        
+        function isTitleRow(row) {
+            if (!row || !row[0]) return false;
+            
+            const firstCell = String(row[0]).trim();
+            
+            const titlePatterns = [
+                /^대전\s*:\s*임현우/i,
+                /^여수\s*:\s*이용/i,
+                /^대구\s*:\s*안영호/i,
+                /^부산\s*:\s*정창식/i,
+                /^강서$/i,
+                /^파주$/i,
+                /^상암$/i,
+                /^강북$/i,
+                /^영등포$/i,
+                /^강남$/i,
+                /^기타$/i
+            ];
+            
+            return titlePatterns.some(pattern => pattern.test(firstCell));
+        }
+        
+        function isValidDataRow(row) {
+            if (!row || row.length === 0) return false;
+            
+            const assetNumber = row[0];
+            if (!assetNumber || String(assetNumber).trim() === '') return false;
+            
+            if (isTitleRow(row)) return false;
+            
+            return true;
+        }
+        
+        // 동일한 회수코드를 가진 데이터를 통합하는 함수
+        function consolidateData(rawData) {
+            const consolidated = {};
+            
+            rawData.forEach(row => {
+                const assetNumber = String(row[0] || '').trim();
+                const recoveryCode = String(row[1] || '').trim();
+                
+                // 회수코드를 키로 사용
+                const key = recoveryCode;
+                
+                if (!consolidated[key]) {
+                    consolidated[key] = {
+                        assetNumbers: [],
+                        recoveryCode: recoveryCode,
+                        products: [],
+                        returnPerson: String(row[9] || '').trim(),
+                        contact: String(row[10] || '').trim(),
+                        originalRows: []
+                    };
+                }
+                
+                // 자산번호 추가 (중복 제거)
+                if (assetNumber && !consolidated[key].assetNumbers.includes(assetNumber)) {
+                    consolidated[key].assetNumbers.push(assetNumber);
+                }
+                
+                // 제품 정보 추가
+                const assetClass = String(row[2] || '').trim();
+                const modelName = String(row[3] || '').trim();
+                
+                if (assetClass || modelName) {
+                    const existingProduct = consolidated[key].products.find(
+                        p => p.assetClass === assetClass && p.modelName === modelName
+                    );
+                    
+                    if (!existingProduct) {
+                        consolidated[key].products.push({
+                            assetClass: assetClass || '미분류',
+                            modelName: modelName || '모델명 없음'
+                        });
+                    }
+                }
+                
+                consolidated[key].originalRows.push(row);
+            });
+            
+            return Object.values(consolidated).map(item => {
+                console.log(`통합된 항목: 회수코드 ${item.recoveryCode} - 자산번호 ${item.assetNumbers.length}개, 제품 ${item.products.length}개`);
+                
+                return {
+                    assetNumbers: item.assetNumbers,
+                    recoveryCode: item.recoveryCode,
+                    products: item.products,
+                    returnPerson: item.returnPerson,
+                    contact: item.contact,
+                    originalRows: item.originalRows
+                };
+            });
+        }
+        
+        // 엑셀 파일 업로드 처리
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (typeof XLSX === 'undefined') {
+                showToast('❌ XLSX 라이브러리가 로드되지 않았습니다.', true);
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const allData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    
+                    const rawData = allData.slice(5).filter(row => isValidDataRow(row));
+                    
+                    excelData = consolidateData(rawData);
+                    
+                    const totalAssets = excelData.reduce((sum, item) => sum + item.assetNumbers.length, 0);
+                    const totalProducts = excelData.reduce((sum, item) => sum + item.products.length, 0);
+                    
+                    showToast(`✅ 엑셀 파일 업로드 완료! (${excelData.length}개 회수증, 총 ${totalAssets}개 자산, ${totalProducts}개 제품)`);
+                    
+                } catch (error) {
+                    showToast('❌ 엑셀 파일 읽기 오류: ' + error.message, true);
+                }
+            };
+            
+            reader.onerror = function(error) {
+                showToast('❌ 파일 읽기 오류가 발생했습니다.', true);
+            };
+            
+            reader.readAsArrayBuffer(file);
+        });
+        
+        function generateReceipt() {
+    if (excelData.length === 0) {
+        showToast('❌ 먼저 엑셀 파일을 업로드해주세요.', true);
+        return;
+    }
+    
+    const container = document.getElementById('receiptContainer');
+    const wrapper = document.querySelector('.receipt-wrapper');
+    const header = document.querySelector('.fixed-header');
+    let receiptsHTML = '';
+    
+    const receiptDate = getCurrentDateString();
+    
+    excelData.forEach((item, index) => {
+        receiptsHTML += `
+            <div class="receipt-page">
+                ${createReceiptHTML('회수자용', receiptDate, item, index)}
+                <div class="cut-line"></div>
+                ${createReceiptHTML('반납자용', receiptDate, item, index)}
+            </div>
+        `;
+    });
+    
+    container.innerHTML = `
+                <div class="receipt-title-section" style="text-align: center; margin-bottom: 10px; padding: 20px;">
+            <h2 style="color: white; font-size: 28px; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                📋 생성된 회수확인서
+            </h2>
+            <p style="color: rgba(255,255,255,0.9); font-size: 16px;">
+                총 ${excelData.length}개의 회수확인서가 생성되었습니다.
+            </p>
+        </div>
+        ${receiptsHTML}
+                <div class="receipt-buttons-section" style="text-align: center; margin-top: 30px; padding: 20px;">
+            <button class="btn btn-secondary" onclick="printReceipt()" style="margin-right: 15px;">🖨️ 전체 인쇄</button>
+            <button class="btn btn-secondary" onclick="goToMain()">🏠 메인으로 돌아가기</button>
+        </div>
+    `;
+    
+    // 🔥 헤더를 컴팩트 모드로 변경하고 회수증 보이기
+    header.classList.add('compact');
+    wrapper.classList.add('show');
+    
+    // 🔥 회수증 영역으로 부드럽게 스크롤 (헤더 높이만큼 오프셋)
+    setTimeout(() => {
+        const headerHeight = header.offsetHeight;
+        window.scrollTo({
+            top: headerHeight,
+            behavior: 'smooth'
+        });
+    }, 300);
+    
+        showToast('✅ 회수확인서가 성공적으로 생성되었습니다!');
+        
+        // 🔧 회수증 영역으로 스크롤 이동
+        setTimeout(() => {
+            const receiptContainer = document.getElementById('receiptContainer');
+            receiptContainer.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }, 300);
+    }
+        
+        // 제품 목록을 한 줄로 표시하는 함수
+        function createProductListText(products) {
+            if (!products || products.length === 0) {
+                return '제품 정보 없음';
+            }
+            
+            const productTexts = products.map(product => {
+                if (product.assetClass && product.modelName) {
+                    return `${product.assetClass} ${product.modelName}`;
+                } else if (product.assetClass) {
+                    return product.assetClass;
+                } else if (product.modelName) {
+                    return product.modelName;
+                } else {
+                    return '미분류';
+                }
+            });
+            
+            return productTexts.join(', ');
+        }
+        
+        function createReceiptHTML(type, date, itemData, index) {
+            const assetNumbersText = itemData.assetNumbers.join(', ');
+            const productListText = createProductListText(itemData.products);
+            
+// 🎯 모든 타입에서 가로 1줄 레이아웃 사용
+const signatureSection = type === '반납자용' ? 
+    `<div class="signature-section">
+        <div class="signature-row">
+            <div class="signature-group">
+                <div class="signature-title">🏢 회수자 :</div>
+            </div>
+        </div>
+    </div>` :
+    `<div class="signature-section">
+        <div class="signature-row">
+            <div class="signature-group">
+                <div class="signature-title">🏢 회수자 :</div>
+            </div>
+            <div class="signature-group">
+                <div class="signature-title">🏢 반납자 :</div>
+            </div>
+        </div>
+    </div>`;
+            
+            return `
+                <div class="receipt">
+                    <h2>📋 LG CNS 회수확인서 (${type})</h2>
+                    <div class="receipt-info">
+                        <p><strong>자산번호:</strong> <span class="value">${assetNumbersText}</span></p>
+                        <p><strong>회수코드:</strong> <span class="value">${itemData.recoveryCode}</span></p>
+                        <p><strong>회수제품목록:</strong> <span class="value">${productListText}</span></p>
+                        <p><strong>반납자 정보:</strong> <span class="value">${itemData.returnPerson} ${itemData.contact}</span></p>
+                        <p><strong>인수일자:</strong> <span class="value">${formatDate(date)}</span></p>
+                    </div>
+                    ${signatureSection}
+                </div>
+            `;
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            return `${year}년 ${month}월 ${day}일`;
+        }
+        
+                function printReceipt() {
+            const receiptContainer = document.getElementById('receiptContainer');
+            if (!receiptContainer.innerHTML.trim()) {
+                showToast('❌ 먼저 회수증을 생성해주세요.', true);
+                return;
+            }
+            
+            // 🔥 인쇄 전 알림
+            showToast('🖨️ 인쇄 준비 중...');
+            
+            // 🔥 잠시 후 인쇄 실행 (CSS 적용 시간 확보)
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+
+function toggleReceipt() {
+    const wrapper = document.querySelector('.receipt-wrapper');
+    const container = document.getElementById('receiptContainer');
+    const header = document.querySelector('.fixed-header');
+    
+    if (!container.innerHTML.trim()) {
+        showToast('❌ 먼저 회수증을 생성해주세요.', true);
+        return;
+    }
+    
+    wrapper.classList.toggle('show');
+    
+    if (wrapper.classList.contains('show')) {
+        header.classList.add('compact');
+        showToast('👁️ 회수증을 표시합니다.');
+        setTimeout(() => {
+            const headerHeight = header.offsetHeight;
+            window.scrollTo({
+                top: headerHeight,
+                behavior: 'smooth'
+            });
+        }, 300);
+    } else {
+        header.classList.remove('compact');
+        showToast('🙈 회수증을 숨겼습니다.');
+        setTimeout(() => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }, 300);
+    }
+}
+function goToMain() {
+    const header = document.querySelector('.fixed-header');
+    const wrapper = document.querySelector('.receipt-wrapper');
+    
+    header.classList.remove('compact');
+    wrapper.classList.remove('show');
+    
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+    showToast('🏠 메인 화면으로 돌아갔습니다.');
+}
+    </script>
+</body>
+</html>
