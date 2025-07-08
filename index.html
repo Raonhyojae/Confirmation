@@ -227,7 +227,7 @@ h1::before {
 }
 
 
-/* 🔥 /* 🔥 회수확인서 영역 - 완전히 새로운 버전 */
+/* 🔥 회수확인서 영역 - 완전히 새로운 버전 */
 .receipt-wrapper {
     display: none;
     padding-top: 290px; /* 🔥 고정 헤더 공간 확보 */
@@ -830,7 +830,6 @@ h1::before {
         gap: 10px !important;
     }
     
-    .signature-title {
 .signature-title {
     font-size: 20px !important;
     min-width: 55px !important;                /* 🔥 70px → 55px로 축소 */
@@ -885,7 +884,6 @@ h1::before {
     }
 
 /* 🖨️ 인쇄용 스타일 */
-@media print {
     /* 🔥 인쇄 시 타이틀 영역 숨기기 */
     .receipt-title-section {
         display: none !important;
@@ -938,7 +936,6 @@ h1::before {
     /* 🔥 절취선 간격 최적화 */
     .cut-line {
         margin: 8mm auto !important;
-    }
     }
 }
         /* 🆕 로고 스타일 */
@@ -1035,7 +1032,7 @@ h1::before {
         </div>
 <!-- 🆕 로고 추가 -->
 <div class="company-logo" style="display: flex; justify-content: center; align-items: center; text-align: center;">
-    <img src="./assets/estream_logo.png" alt="eSTREAM 로고" class="logo-image" style="width: 200px; display: block; margin: 0 auto;">
+    <img src="estream_logo.png" alt="eSTREAM 로고" class="logo-image" style="width: 200px; display: block; margin: 0 auto;">
 </div>
         </div>
 </div>
@@ -1046,9 +1043,13 @@ h1::before {
     </div>
 </body>
     <script>
-        // 🔐 암호화 관련 변수 및 함수 (맨 위에 추가)
+        // 🔐 암호화 관련 변수 및 함수
         let encryptionEnabled = false;
         let encryptionKey = '';
+        
+        // 📊 기본 데이터 변수들 (누락된 변수 추가)
+        let excelData = [];
+        let currentDateTime = null;
 
         // 🔐 보안 초기화 함수
         function initSecurity() {
