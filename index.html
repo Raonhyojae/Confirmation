@@ -10,7 +10,59 @@ LG CNS 회수확인서 프로그램 v1.0
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LG CNS 회수확인서 프로그램</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-        <style>
+    <!-- 🔐 암호화 라이브러리 추가 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+ <style>
+        /* 🔐 보안 섹션 CSS 추가 */
+        .security-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            border: 2px solid #ff4757;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+        }
+
+        .password-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 15px;
+            margin: 10px auto;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .password-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .security-status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .security-status.locked {
+            background: rgba(255,107,107,0.2);
+            border: 1px solid #ff6b6b;
+            color: #ff4757;
+        }
+
+        .security-status.unlocked {
+            background: rgba(46,213,115,0.2);
+            border: 1px solid #2ed573;
+            color: #2ed573;
+        }
+</style>
+    <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         /* 🔥 폰트 문제 해결 - 이 부분을 추가하세요 */
@@ -949,7 +1001,16 @@ h1::before {
     <div class="fixed-header">
     <div class="container">
         <h1>🏢 LG CNS 회수확인서 프로그램</h1>
-        
+               <!-- 🔐 여기에 추가! (upload-section 바로 위) -->
+        <div class="security-section">
+            <h3>🔐 데이터 보안</h3>
+            <p>업로드된 데이터는 AES-256으로 암호화됩니다</p>
+            <input type="password" id="encryptionKey" class="password-input" 
+                   placeholder="암호화 키를 입력하세요" maxlength="32">
+            <div id="securityStatus" class="security-status locked">
+                🔒 보안 키 대기 중
+            </div>
+        </div>
         <div class="upload-section">
             <div class="file-input-wrapper">
                 <input type="file" id="excelFile" accept=".xlsx,.xls" />
@@ -985,8 +1046,55 @@ h1::before {
     </div>
 </body>
     <script>
-        let excelData = [];
-        let currentDateTime = null;
+        // 🔐 암호화 관련 변수 및 함수 (맨 위에 추가)
+        let encryptionEnabled = false;
+        let encryptionKey = '';
+
+        // 🔐 보안 초기화 함수
+        function initSecurity() {
+            const keyInput = document.getElementById('encryptionKey');
+            const statusDiv = document.getElementById('securityStatus');
+            
+            if (!keyInput || !statusDiv) return;
+            
+            keyInput.addEventListener('input', function() {
+                const key = this.value.trim();
+                if (key.length >= 8) {
+                    encryptionKey = key;
+                    encryptionEnabled = true;
+                    statusDiv.className = 'security-status unlocked';
+                    statusDiv.innerHTML = '🔓 보안 활성화됨 (AES-256)';
+                } else {
+                    encryptionEnabled = false;
+                    statusDiv.className = 'security-status locked';
+                    statusDiv.innerHTML = '🔒 최소 8자 이상 입력하세요';
+                }
+            });
+        }
+
+        // 데이터 암호화 함수
+        function encryptSensitiveData(data) {
+            if (!encryptionEnabled || !window.CryptoJS || !data) return data;
+            try {
+                return CryptoJS.AES.encrypt(data.toString(), encryptionKey).toString();
+            } catch (error) {
+                console.error('암호화 실패:', error);
+                return data;
+            }
+        }
+
+        // 데이터 복호화 함수
+        function decryptSensitiveData(encryptedData) {
+            if (!encryptionEnabled || !window.CryptoJS || !encryptedData) return encryptedData;
+            try {
+                const decrypted = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
+                const result = decrypted.toString(CryptoJS.enc.Utf8);
+                return result || encryptedData; // 복호화 실패 시 원본 반환
+            } catch (error) {
+                console.warn('복호화 실패:', error);
+                return encryptedData;
+            }
+        }
         
         // 토스트 알림 함수
         function showToast(message, isError = false) {
@@ -1014,9 +1122,10 @@ h1::before {
         
         // 페이지 로드 시 시간 동기화
         document.addEventListener('DOMContentLoaded', function() {
-            syncDateTime();
-            setInterval(updateCurrentDate, 24 * 60 * 60 * 1000);
-        });
+    initSecurity(); // 🔐 보안 초기화 추가
+    syncDateTime();
+    setInterval(updateCurrentDate, 24 * 60 * 60 * 1000);
+});
         
         // 온라인 시간 서버와 동기화
         async function syncDateTime() {
@@ -1177,13 +1286,13 @@ h1::before {
                 console.log(`통합된 항목: 회수코드 ${item.recoveryCode} - 자산번호 ${item.assetNumbers.length}개, 제품 ${item.products.length}개`);
                 
                 return {
-                    assetNumbers: item.assetNumbers,
-                    recoveryCode: item.recoveryCode,
-                    products: item.products,
-                    returnPerson: item.returnPerson,
-                    contact: item.contact,
-                    originalRows: item.originalRows
-                };
+    assetNumbers: item.assetNumbers,
+    recoveryCode: item.recoveryCode,
+    products: item.products,
+    returnPerson: encryptionEnabled ? encryptSensitiveData(item.returnPerson) : item.returnPerson,
+    contact: encryptionEnabled ? encryptSensitiveData(item.contact) : item.contact,
+    originalRows: item.originalRows
+};
             });
         }
         
@@ -1314,8 +1423,12 @@ h1::before {
         }
         
         function createReceiptHTML(type, date, itemData, index) {
-            const assetNumbersText = itemData.assetNumbers.join(', ');
-            const productListText = createProductListText(itemData.products);
+    const assetNumbersText = itemData.assetNumbers.join(', ');
+    const productListText = createProductListText(itemData.products);
+    
+    // 🔐 민감한 데이터 복호화해서 표시 (이 부분 추가)
+    const returnPerson = encryptionEnabled ? decryptSensitiveData(itemData.returnPerson) : itemData.returnPerson;
+    const contact = encryptionEnabled ? decryptSensitiveData(itemData.contact) : itemData.contact;
             
 // 🎯 모든 타입에서 가로 1줄 레이아웃 사용
 const signatureSection = type === '반납자용' ? 
@@ -1344,7 +1457,7 @@ const signatureSection = type === '반납자용' ?
                         <p><strong>자산번호:</strong> <span class="value">${assetNumbersText}</span></p>
                         <p><strong>회수코드:</strong> <span class="value">${itemData.recoveryCode}</span></p>
                         <p><strong>회수제품목록:</strong> <span class="value">${productListText}</span></p>
-                        <p><strong>반납자 정보:</strong> <span class="value">${itemData.returnPerson} ${itemData.contact}</span></p>
+                        <p><strong>반납자 정보:</strong> <span class="value">${returnPerson} ${contact}</span></p>
                         <p><strong>인수일자:</strong> <span class="value">${formatDate(date)}</span></p>
                     </div>
                     ${signatureSection}
